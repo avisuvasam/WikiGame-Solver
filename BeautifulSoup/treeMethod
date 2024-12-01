@@ -1,0 +1,111 @@
+from logging import NullHandler
+from unittest.util import three_way_cmp
+import requests
+from bs4 import BeautifulSoup
+from queue import Queue
+
+class Node:
+    children = list()
+    URL = ""
+    visited = False
+
+    def __init__(self, URL):
+        self.URL = URL
+        self.children = list()
+        self.visited = False
+
+    def isVisited(self):
+        return self.visited
+
+    def returnChildren(self):
+        return self.children
+
+    def url(self):
+        return self.URL
+
+    def getChildren(self):
+        r = requests.get(self.URL)
+        soup = BeautifulSoup(r.content, 'html.parser')
+
+        # Exclude pages with A BUNCH of links, like countries/towns
+        if soup.find('p', class_='infobox ib-country vcard'):
+            return
+        if soup.find('p', class_='infobox ib-settlement vcard'):
+            return
+
+        # Gather all links from page
+        for a_tag in soup.find_all('a', href=True):
+            # except if it's in the references or notes
+            if a_tag.find(class_='reflist'):
+                break
+            # or in categories
+            if a_tag.find(class_='catlinks'):
+                break
+            # or in the navigation box
+            if a_tag.find(class_='navbox'):
+                break
+
+            href = a_tag['href']
+            if href.startswith("/wiki/") and not ":" in href:
+                # exclude links to the main page
+                if href == "/wiki/Main_Page":
+                    continue
+                # or links to itself
+                if href is self.URL:
+                    continue
+                # or citations
+                if href.endswith("_(identifier)"):
+                    continue
+                # or disambiguations (typically lists)
+                if href.endswith("_(disambiguation)"):
+                    continue
+                # or lists
+                if href.startswith("/wiki/List_of"):
+                    continue
+                node = Node("https://en.wikipedia.org" + href)
+                self.children.append(node)
+
+class Tree:
+    root = None
+    end = None
+
+    def __init__(self, root, end):
+        self.root = Node(root)
+        self.end = end
+
+    def buildTree(self):
+        queue = Queue()
+        # nodesVisited = set()
+
+        # initialize queue
+        queue.put(self.root)
+
+        # start loop
+        while queue.empty() is False:
+            currNode = queue.get()
+            print(currNode.url)
+
+            # keep moving if node is already visited
+            if currNode.visited is True:
+                continue
+            # if not, mark as visited, continue processing
+            else:
+                # nodesVisited.add(currNode)
+                currNode.visited = True
+            if currNode.url == self.end:
+                print("Path found!")
+                return
+            currNode.getChildren()
+            if self.end in currNode.children.url:
+                print("Path found!")
+                return
+            for x in currNode.returnChildren():
+                queue.put(x)
+        print("Path not found!")
+        return
+
+
+if __name__ == '__main__':
+    tree = Tree("https://en.wikipedia.org/wiki/Cat", "https://en.wikipedia.org/wiki/Stupidity")
+    tree.buildTree()
+
