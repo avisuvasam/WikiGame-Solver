@@ -1,16 +1,15 @@
 import aiohttp
 import asyncio
 import time
-import breadthFirstSearch
-import depthFirstSearch
 from bs4 import BeautifulSoup
 from queue import Queue
 from collections import deque
+import numpy as np
+import timeit
 
 # "Header" file
 # Wikigame list of rules: https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game
 class AdjList:
-
     # Values
         # Start URL
     startURL = ""
@@ -33,21 +32,36 @@ class AdjList:
         print("Keys: " + str(self.dictURL.keys()))
         print("Values: " + str(self.dictURL.values()))
 
-    def searches(self):
-        breadthFirstSearch.bfs(self.dictURL, self.startURL, self.endURL)
-        depthFirstSearch.dfs(self.dictURL, self.startURL, self.endURL)
-
         # Build Adj. List
     async def buildAdjList(self, start_time):
         print("Building list, please wait...")
+
+        # External session - Quicker fetch times
+        session = aiohttp.ClientSession()
+
         # Initializing Queue - quick explanation
             # URL queues: forward searches from start, backwards searches from end.
             # Backwards simulates priority. If the forward queue comes across one of the backwards pages,
             # The queue will prioritize that page, as its more likely to point towards the end URL
             # So the "random" search becomes more directed.
-        # Start and end URLs
-        forwURL = self.startURL
-        backwURL = self.endURL
+
+        # Validating links
+        # Open page at link (sometimes, an inputted link is redirected to a different page)
+        async with session.get(self.startURL) as response:
+            s = await response.text()
+        async with session.get(self.endURL) as resp:
+            e = await resp.text()
+
+        sSoup = BeautifulSoup(s, "html.parser")
+        eSoup = BeautifulSoup(e, "html.parser")
+
+        # Get the link of the page (whether its the same link inputted or the redirected one)
+        forwURL = sSoup.find('link', rel="canonical")['href']
+        backwURL = eSoup.find('link', rel="canonical")['href']
+        # And set as the correct links to search from and for
+        self.startURL = forwURL
+        self.endURL = backwURL
+
         # Forwards deque (functions as a normal queue, but can add things to the front for prioritization)
         # Backwards queue is just a normal queue.
         fwQueue = deque()
@@ -55,12 +69,13 @@ class AdjList:
         # Tracks whether these pages have been visited yet. Add initial pages.
         fwSet = set(forwURL)
         bwSet = set(backwURL)
+        # Priority
+        priority = False
+        priorCount = 0
 
         # Starting queues
         fwQueue.append(forwURL)
         bwQueue.put(backwURL)
-        # External session - Quicker fetch times
-        session = aiohttp.ClientSession()
 
         while bwQueue.empty() is False:
             # Assign new current url
@@ -97,16 +112,16 @@ class AdjList:
             # If either page is for a country or town, skip
             # Countries/towns/locations have way too many links
             if fSoup.find('p', class_='infobox ib-country vcard'):
-                print("Skip countries")
+                # print("Skip countries")
                 continue
             if fSoup.find('p', class_='infobox ib-settlement vcard'):
-                print("Skip settlements")
+                # print("Skip settlements")
                 continue
             if bSoup.find('p', class_='infobox ib-country vcard'):
-                print("Skip countries")
+                # print("Skip countries")
                 continue
             if bSoup.find('p', class_='infobox ib-settlement vcard'):
-                print("Skip settlements")
+                # print("Skip settlements")
                 continue
 
             # Pull all links from page in the forward queue
@@ -146,16 +161,24 @@ class AdjList:
                     if finalOutURL not in fwSet:
                         # Add to this page's outgoing links list
                         fOutURL.append(finalOutURL)
+                        # print("Out URL: " + finalOutURL)
                         # If there's a similar article between the two searches
+                        if priority is True:
+                            fwQueue.append(finalOutURL)
+                            priorCount = priorCount + 1
                         if finalOutURL in bwSet:
                             # Prioritize searching that link, probably closer to target
-                            fwQueue.clear()
+                            # fwQueue.clear()
                             fwQueue.appendleft(finalOutURL)
+                            priority = True
                         # Otherwise, add to queue like normal
                         else:
                             fwQueue.append(finalOutURL)
             # Link current page to its out URLs, add to list
             self.dictURL[forwURL] = fOutURL
+            if priority is True:
+                priority = False
+                priorCount = 0
 
             # Do it again, but this time from END wiki page
             for a_tag in bSoup.find_all('a', href=True):
@@ -203,7 +226,6 @@ class AdjList:
         await session.close()
         return
 
-
 async def main():
     # Takes start URL and end URL
     adjlist = AdjList("https://en.wikipedia.org/wiki/Fortnite", "https://en.wikipedia.org/wiki/Sweaty")
@@ -211,11 +233,14 @@ async def main():
     start_time = time.time()
     await adjlist.buildAdjList(start_time)
     print("Time: " + str(round(time.time()-start_time, 2)) + " seconds.")
-    adjlist.searches()
-    #adjlist.printDict()
+
+
 
 # Aiohttp stuff, do not touch!!
 loop = asyncio.get_event_loop() # Will throw a warning, but it's fine
 loop.run_until_complete(main())
 # REF: https://oxylabs.io/blog/asynchronous-web-scraping-python-aiohttp
 # REF: https://docs.aiohttp.org/en/stable/client_quickstart.html
+
+# Note: Instead of wiping the queue to prioritize, try saving a copy of the old queue somewhere and just moving up
+# the prioritized articles
