@@ -117,20 +117,6 @@ class AdjList:
 
             # Pull all links from page in the forward queue
             for a_tag in fSoup.find_all('a', href=True):
-                # except if it's in the references or notes
-                if a_tag.find(class_='reflist'):
-                    print("meow")
-                    continue
-                # or in categories
-                if a_tag.find(class_='catlinks'):
-                    print("this works")
-                    continue
-                # or in the navigation box
-                if a_tag.find(class_='navbox'):
-                    print("yippeee")
-                    continue
-                # ^(Can't use these in the wiki game)
-
                 href = a_tag['href']
                 # No external links
                 if href.startswith("/wiki/") and not ":" in href:
@@ -172,13 +158,6 @@ class AdjList:
 
             # Do it again, but this time from END wiki page
             for a_tag in bSoup.find_all('a', href=True):
-                if a_tag.find(class_='reflist'):
-                    continue
-                if a_tag.find(class_='catlinks'):
-                    continue
-                if a_tag.find(class_='navbox'):
-                    continue
-
                 hRef = a_tag['href']
                 if hRef.startswith("/wiki/") and not ":" in hRef:
                     if hRef == "/wiki/Main_Page":
