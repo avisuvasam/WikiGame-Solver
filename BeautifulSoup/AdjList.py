@@ -1,6 +1,8 @@
 import aiohttp
 import asyncio
 import time
+import breadthFirstSearch
+import depthFirstSearch
 from bs4 import BeautifulSoup
 from queue import Queue
 from collections import deque
@@ -26,6 +28,10 @@ class AdjList:
 
     def __str__(self):
         return self.dictURL
+
+    def searches(self):
+        depthFirstSearch.dfs(self.dictURL, self.startURL, self.endURL)
+        breadthFirstSearch.bfs(self.dictURL, self.startURL, self.endURL)
 
         # Prints all keys and values. Value lists are so large... quite hard to read...
     def printDict(self):
@@ -233,6 +239,7 @@ async def main():
     start_time = time.time()
     await adjlist.buildAdjList(start_time)
     print("Time: " + str(round(time.time()-start_time, 2)) + " seconds.")
+    adjlist.searches()
 
 
 

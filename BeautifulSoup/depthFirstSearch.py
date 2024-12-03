@@ -20,13 +20,13 @@ def dfs(links, start, target):
         #Prints out the average of the DFS function running for 100 times
         t = timeit.Timer(lambda: dfs_helper(links, start, target, stack, visited))
         print("")
-        print("Total time taken: ", t.timeit(100), "seconds")
+        print("Total time taken for DFS: ", t.timeit(100), "seconds")
     else:
         #Reports if the search was unsuccessful, as well as the average time of the function
         print(f"Depth First Search Failed:")
         print(f"There is no path between {start} and {target}")
         t = timeit.Timer(lambda: dfs_helper(links, start, target, stack, visited))
-        print("Total time taken: ", t.timeit(100), "seconds")
+        print("Total time taken for DFS: ", t.timeit(100), "seconds")
 
     return result
 
