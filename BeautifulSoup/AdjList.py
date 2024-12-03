@@ -1,13 +1,9 @@
 import aiohttp
 import asyncio
 import time
-import breadthFirstSearch
-import depthFirstSearch
 from bs4 import BeautifulSoup
 from queue import Queue
 from collections import deque
-import numpy as np
-import timeit
 
 # "Header" file
 # Wikigame list of rules: https://en.wikipedia.org/wiki/Wikipedia:Wiki_Game
@@ -28,10 +24,6 @@ class AdjList:
 
     def __str__(self):
         return self.dictURL
-
-    def searches(self):
-        depthFirstSearch.dfs(self.dictURL, self.startURL, self.endURL)
-        breadthFirstSearch.bfs(self.dictURL, self.startURL, self.endURL)
 
         # Prints all keys and values. Value lists are so large... quite hard to read...
     def printDict(self):
@@ -77,7 +69,6 @@ class AdjList:
         bwSet = set(backwURL)
         # Priority
         priority = False
-        priorCount = 0
 
         # Starting queues
         fwQueue.append(forwURL)
@@ -93,15 +84,15 @@ class AdjList:
                 await session.close()
                 return
 
-            bwURL = bwQueue.get()
+            backwURL = bwQueue.get()
             # If the URL was already visited, keep moving
             if forwURL in fwSet:
                 continue
-            if bwURL in bwSet:
+            if backwURL in bwSet:
                 continue
             # Mark as visited
             fwSet.add(forwURL)
-            bwSet.add(bwURL)
+            bwSet.add(backwURL)
             # All URLs from the page
             fOutURL = []
             bOutURL = []
@@ -109,7 +100,7 @@ class AdjList:
             # Load page content
             async with session.get(forwURL) as resp:
                 f = await resp.text()
-            async with session.get(bwURL) as response:
+            async with session.get(backwURL) as response:
                 b = await response.text()
 
             fSoup = BeautifulSoup(f, 'html.parser')
@@ -117,29 +108,26 @@ class AdjList:
 
             # If either page is for a country or town, skip
             # Countries/towns/locations have way too many links
-            if fSoup.find('p', class_='infobox ib-country vcard'):
-                # print("Skip countries")
+            if fSoup.find('table', class_='infobox ib-country vcard') or fSoup.find('table', class_='infobox ib-settlement vcard'):
+                print("Skip settlements and countries")
                 continue
-            if fSoup.find('p', class_='infobox ib-settlement vcard'):
-                # print("Skip settlements")
-                continue
-            if bSoup.find('p', class_='infobox ib-country vcard'):
-                # print("Skip countries")
-                continue
-            if bSoup.find('p', class_='infobox ib-settlement vcard'):
-                # print("Skip settlements")
+            if bSoup.find('table', class_='infobox ib-country vcard') or bSoup.find('table', class_='infobox ib-settlement vcard'):
+                print("Skip settlements and countries")
                 continue
 
             # Pull all links from page in the forward queue
             for a_tag in fSoup.find_all('a', href=True):
                 # except if it's in the references or notes
                 if a_tag.find(class_='reflist'):
+                    print("meow")
                     continue
                 # or in categories
                 if a_tag.find(class_='catlinks'):
+                    print("this works")
                     continue
                 # or in the navigation box
                 if a_tag.find(class_='navbox'):
+                    print("yippeee")
                     continue
                 # ^(Can't use these in the wiki game)
 
@@ -167,14 +155,11 @@ class AdjList:
                     if finalOutURL not in fwSet:
                         # Add to this page's outgoing links list
                         fOutURL.append(finalOutURL)
-                        # print("Out URL: " + finalOutURL)
                         # If there's a similar article between the two searches
                         if priority is True:
                             fwQueue.append(finalOutURL)
-                            priorCount = priorCount + 1
                         if finalOutURL in bwSet:
                             # Prioritize searching that link, probably closer to target
-                            # fwQueue.clear()
                             fwQueue.appendleft(finalOutURL)
                             priority = True
                         # Otherwise, add to queue like normal
@@ -184,7 +169,6 @@ class AdjList:
             self.dictURL[forwURL] = fOutURL
             if priority is True:
                 priority = False
-                priorCount = 0
 
             # Do it again, but this time from END wiki page
             for a_tag in bSoup.find_all('a', href=True):
@@ -239,7 +223,6 @@ async def main():
     start_time = time.time()
     await adjlist.buildAdjList(start_time)
     print("Time: " + str(round(time.time()-start_time, 2)) + " seconds.")
-    adjlist.searches()
 
 
 
