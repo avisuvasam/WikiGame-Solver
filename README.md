@@ -21,7 +21,7 @@ To start, the user inputs two Wikipedia URLs: a start URL and an end URL. The ap
 
 1. Enter two Wikipedia URLs in the text boxes at the top of the UI.  
    - **Example URL**: `https://en.wikipedia.org/wiki/Professional_wrestling`
-   - For the best experience, consider using Words provided by [The WikiGame](https://www.thewikigame.com/group) and then finding the corresponding wikipedia page in a separate browser
+   - For the best experience, consider using Words provided by [The WikiGame](https://www.thewikigame.com/group) and then finding the corresponding Wikipedia page in a separate browser
 
 2. Click the **Build Graph** button and wait for a success message in the output area:  
    _"Graph built successfully!"_
