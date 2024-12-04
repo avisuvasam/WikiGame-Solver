@@ -15,13 +15,13 @@ To start, the user inputs two Wikipedia URLs: a start URL and an end URL. The ap
 
 ### Prerequisites
 1. Clone the repository and ensure all files are located in the same directory.
-2. Install the required Python libraries
+2. Install the required Python libraries: Aiohttp, Asyncio, BeautifulSoup, queue:Queue, Collections:deque, Timeit, Time, tkinter, threading, sys, webbrowser, pyvis
 
 ## Using the Application
 
 1. Enter two Wikipedia URLs in the text boxes at the top of the UI.  
    - **Example URL**: `https://en.wikipedia.org/wiki/Professional_wrestling`
-   - For the best experience, consider using URLs provided by [The WikiGame](https://www.thewikigame.com/group).
+   - For the best experience, consider using Words provided by [The WikiGame](https://www.thewikigame.com/group) and then finding the corresponding wikipedia page in a separate browser
 
 2. Click the **Build Graph** button and wait for a success message in the output area:  
    _"Graph built successfully!"_
