@@ -195,19 +195,8 @@ class AdjList:
         await session.close()
         return
 
-async def main():
-    # Takes start URL and end URL
-    adjlist = AdjList("https://en.wikipedia.org/wiki/Fortnite", "https://en.wikipedia.org/wiki/Sweaty")
-    # Start timer - tracks how long the list takes to build
-    start_time = time.time()
-    await adjlist.buildAdjList(start_time)
-    print("Time: " + str(round(time.time()-start_time, 2)) + " seconds.")
-
-
-
 # Aiohttp stuff, do not touch!!
 loop = asyncio.get_event_loop() # Will throw a warning, but it's fine
-loop.run_until_complete(main())
 # REF: https://oxylabs.io/blog/asynchronous-web-scraping-python-aiohttp
 # REF: https://docs.aiohttp.org/en/stable/client_quickstart.html
 

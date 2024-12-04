@@ -16,6 +16,7 @@ def bfs(links, start, target):
         #Prints out the average of the BFS function running 100 times
         t = timeit.Timer(lambda: bfs_helper(links, start, target, queue, visited, paths))
         print("Total time taken for BFS: ", t.timeit(100), "seconds")
+        return paths[target]
     else:
         #Reports if the search was unsuccessful, as well as the average time of the function
         print(f"Breadth First Search Failed:")
@@ -42,11 +43,6 @@ def bfs_helper(links, start, target, queue, visited, paths):
                     visited.add(neighbor)
                     paths[neighbor] = paths[current] + f" -> {neighbor}"
     return False
-"""
-if __name__ == "__main__":
 
-    diction = {"A" : ["B", "C"], "B" : ["D", "E"], "C" : ["F", "G"], "D" : ["E"], "E" : ["F"], "F" : [], "G" : [], "H" : []}
-    bfs(diction, "A", "F")
-"""
 
 

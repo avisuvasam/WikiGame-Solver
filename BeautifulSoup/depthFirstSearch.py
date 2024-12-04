@@ -1,5 +1,4 @@
 from collections import deque
-import numpy as np
 import timeit
 
 def dfs(links, start, target):
@@ -50,10 +49,4 @@ def dfs_helper(links, article, target, stack, visited):
                         return True
     return False
 
-"""
-if __name__ == "__main__":
-
-    dict = {"A" : ["B", "C"], "B" : ["D", "E"], "C" : ["F", "G"], "D" : ["E"], "E" : ["F"], "F" : [], "G" : [], "H" : []}
-    dfs(dict, "A", "F")
-"""
 
