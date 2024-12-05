@@ -30,7 +30,7 @@ def dfs(links, start, target):
     return result
 
 
-
+#Code for dfs_helper inspired by lecture 8a by Amanpreet Kapoor
 def dfs_helper(links, article, target, stack, visited):
     visited.add(article)
     if article == target:

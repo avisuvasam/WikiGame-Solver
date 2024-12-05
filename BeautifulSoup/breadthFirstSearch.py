@@ -24,6 +24,7 @@ def bfs(links, start, target):
         t = timeit.Timer(lambda: bfs_helper(links, start, target, queue, visited, paths))
         print("Total time taken for BFS: ", t.timeit(100), "seconds")
 
+#Code for bfs_helper inspired by lecture 8a by Amanpreet Kapoor
 def bfs_helper(links, start, target, queue, visited, paths):
     visited.add(start)
     while len(queue) != 0:
